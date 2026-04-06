@@ -1,7 +1,7 @@
-/* Area Status Modal Logic */
-
 // API Config (Ensure consistency)
-const API_BASE_MODAL = 'http://localhost:8000/api';
+const API_BASE_MODAL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000/api'
+    : `${window.location.origin}/api`;
 
 let currentContext = null;
 

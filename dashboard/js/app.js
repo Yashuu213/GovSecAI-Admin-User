@@ -185,7 +185,7 @@ async function loadHomeData() {
 
 // --- Specialized Chart Rendering ---
 
-function renderChart(canvasId, label, dataEntries, type = 'bar', color = '#0ed7b2') {
+function renderChart(canvasId, label, dataEntries, type = 'bar', color = '#0ed7b2', onClick = null) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -220,6 +220,12 @@ function renderChart(canvasId, label, dataEntries, type = 'bar', color = '#0ed7b
         },
         options: {
             indexAxis: type === 'horizontalBar' ? 'y' : 'x',
+            onClick: (e, elements) => {
+                if (onClick && elements.length > 0) {
+                    const idx = elements[0].index;
+                    onClick(labels[idx], data[idx]);
+                }
+            },
             plugins: {
                 legend: {
                     display: isCircular,
@@ -234,22 +240,23 @@ function renderChart(canvasId, label, dataEntries, type = 'bar', color = '#0ed7b
                     borderWidth: 1
                 }
             },
-            scales: {
+            scales: isCircular ? (type === 'polarArea' ? {
+                r: {
+                    display: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { backdropColor: 'transparent', color: '#64748b' }
+                }
+            } : {}) : {
                 y: {
-                    display: !isCircular,
+                    display: true,
                     beginAtZero: true,
                     grid: { color: 'rgba(255,255,255,0.03)' },
                     ticks: { padding: 10 }
                 },
                 x: {
-                    display: !isCircular,
+                    display: true,
                     grid: { display: false },
                     ticks: { padding: 10 }
-                },
-                r: {
-                    display: type === 'polarArea',
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { backdropColor: 'transparent', color: '#64748b' }
                 }
             }
         }
@@ -260,9 +267,9 @@ function renderChart(canvasId, label, dataEntries, type = 'bar', color = '#0ed7b
     charts[canvasId] = new Chart(ctx, config);
 }
 
-function renderAreaChart(canvasId, label, dataEntries, color) {
+function renderAreaChart(canvasId, label, dataEntries, color, onClick = null) {
     // Top 15 Areas always use a Horizontal Bar Chart for maximum readability
-    renderChart(canvasId, label, dataEntries, 'horizontalBar', color);
+    renderChart(canvasId, label, dataEntries, 'horizontalBar', color, onClick);
 }
 
 // --- ROAD ---
@@ -298,7 +305,9 @@ async function loadRoadAreas(city) {
         const data = await r.json();
         const areas = data.area_counts || {};
         const sorted = Object.entries(areas).sort((a, b) => b[1] - a[1]).slice(0, 15);
-        renderAreaChart(canvasId, `Top Areas in ${city}`, sorted, '#3b82f6');
+        renderAreaChart(canvasId, `Top Areas in ${city}`, sorted, '#3b82f6', (area, count) => {
+            if (window.showAreaStatusPopup) window.showAreaStatusPopup('road', city, area, count);
+        });
     } catch (e) { console.error('Area load error:', e); }
 }
 
@@ -324,7 +333,7 @@ async function loadHealthData() {
 
         renderChart('healthChart', 'City Distribution', sorted.slice(0, 10), 'doughnut', '#10b981');
         if (charts['healthAreaChart']) charts['healthAreaChart'].destroy();
-    } catch (e) { list.innerHTML = 'Error'; }
+    } catch (e) { console.error('Health load error:', e); list.innerHTML = '<div class="muted">Error loading data</div>'; }
 }
 
 async function loadHealthAreas(city) {
@@ -334,7 +343,9 @@ async function loadHealthAreas(city) {
         const data = await r.json();
         const areas = data.area_counts || {};
         const sorted = Object.entries(areas).sort((a, b) => b[1] - a[1]).slice(0, 15);
-        renderAreaChart(canvasId, `Top Areas in ${city}`, sorted, '#10b981');
+        renderAreaChart(canvasId, `Top Areas in ${city}`, sorted, '#10b981', (area, count) => {
+            if (window.showAreaStatusPopup) window.showAreaStatusPopup('health', city, area, count);
+        });
     } catch (e) { console.error(e); }
 }
 
@@ -370,7 +381,9 @@ async function loadFraudAreas(city) {
         const data = await r.json();
         const areas = data.area_counts || {};
         const sorted = Object.entries(areas).sort((a, b) => b[1] - a[1]).slice(0, 15);
-        renderAreaChart(canvasId, `Top Fraud areas in ${city}`, sorted, '#ef4444');
+        renderAreaChart(canvasId, `Top Fraud areas in ${city}`, sorted, '#ef4444', (area, count) => {
+            if (window.showAreaStatusPopup) window.showAreaStatusPopup('fraud', city, area, count);
+        });
     } catch (e) { console.error(e); }
 }
 
