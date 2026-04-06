@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GovSecAI | Citizen Support Portal</title>
+    <meta name="description" content="Submit and track civic complaints with GovSecAI. Efficient resolution for Road, Health, and Banking issues.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/user.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html" class="logo">
+                <i class="fas fa-shield-halved"></i>
+                GovSecAI
+            </a>
+            <a href="track.html" class="back-btn">
+                <i class="fas fa-magnifying-glass"></i>
+                Track Complaint
+            </a>
+        </nav>
+
+        <header>
+            <h1>Citizen Support Portal</h1>
+            <p class="subtitle">Submit your concerns directly to the authorities. Our AI-driven system ensures your complaints are prioritized and tracked in real-time.</p>
+        </header>
+
+        <div class="category-grid">
+            <div class="card" onclick="location.href='submit.html?type=road'">
+                <i class="fas fa-road"></i>
+                <h3>Road & Transport</h3>
+                <p>Report potholes, broken streetlights, traffic issues, or public transport concerns.</p>
+            </div>
+
+            <div class="card" onclick="location.href='submit.html?type=health'">
+                <i class="fas fa-hospital-user"></i>
+                <h3>Healthcare Services</h3>
+                <p>Report issues with hospital facilities, staff behavior, medical availability, or hygiene.</p>
+            </div>
+
+            <div class="card" onclick="location.href='submit.html?type=banking'">
+                <i class="fas fa-building-columns"></i>
+                <h3>Banking & Fraud</h3>
+                <p>Securely report unauthorized transactions, banking errors, or suspected financial fraud.</p>
+            </div>
+        </div>
+
+        <footer style="margin-top: 6rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            <p>&copy; 2026 GovSecAI Governance System. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

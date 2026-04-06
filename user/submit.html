@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Complaint | GovSecAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/user.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="index.html" class="logo">
+                <i class="fas fa-shield-halved"></i>
+                GovSecAI
+            </a>
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Go Back
+            </a>
+        </nav>
+
+        <header>
+            <h1 id="form-title">Submit Complaint</h1>
+            <p class="subtitle" id="form-subtitle">Please provide the details below. Required metadata like ID and Date will be generated automatically.</p>
+        </header>
+
+        <div class="form-container">
+            <form id="complaint-form">
+                <div id="dynamic-fields">
+                    <!-- Fields injected by JS -->
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <button type="submit" class="btn" id="submit-btn text">
+                        <span id="btn-text">Submit Complaint</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="success-view" style="display: none;">
+            <div class="result-card">
+                <i class="fas fa-circle-check" style="font-size: 4rem; color: var(--success); margin-bottom: 1.5rem;"></i>
+                <h2>Submission Successful!</h2>
+                <p style="color: var(--text-muted); margin-top: 1rem;">Your complaint has been registered. Please save your reference ID to track progress.</p>
+                <div class="id-badge" id="ref-id">---------</div>
+                <div style="margin-top: 2rem;">
+                    <button class="btn" onclick="location.href='index.html'" style="background: var(--glass); border: 1px solid var(--border);">Return Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const type = params.get('type') || 'road';
+            renderForm(type);
+        });
+    </script>
+</body>
+</html>

@@ -9,6 +9,8 @@ import webbrowser
 import threading
 import uvicorn
 import time
+import uuid
+import datetime
 
 app = FastAPI()
 
@@ -29,8 +31,11 @@ DASHBOARD_DIR = os.path.join(BASE_DIR, "dashboard")
 # We mount this at the end or use a specific route to avoid conflicting with /api
 if os.path.isdir(DASHBOARD_DIR):
     app.mount("/dashboard", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
-    # Also mount at root for easier access, but ensure it doesn't shadow /api
     app.mount("/static", StaticFiles(directory=DASHBOARD_DIR), name="static")
+
+USER_DIR = os.path.join(BASE_DIR, "user")
+if os.path.isdir(USER_DIR):
+    app.mount("/user", StaticFiles(directory=USER_DIR, html=True), name="user")
 
 # --- Data Loading ---
 def load_csv(filename):
@@ -147,6 +152,29 @@ def update_stats_cache():
 # --- Models ---
 class StatusUpdate(BaseModel):
     status: str
+
+class RoadComplaintSubmit(BaseModel):
+    city: str
+    area: str
+    issue_type: str
+    description: str
+
+class HealthComplaintSubmit(BaseModel):
+    patient_id: str
+    city: str
+    area: str
+    facility: str
+    category: str
+    complaint_text: str
+
+class BankingFraudSubmit(BaseModel):
+    account_id: str
+    amount: str
+    merchant_category: str
+    transaction_type: str
+    device_type: str
+    location_city: str
+    area: str
 
 # --- Endpoints ---
 
@@ -360,6 +388,96 @@ def resolve_fraud_area(city: str, area: str):
     fraud_df = fraud_df[~mask]
     save_csv(fraud_df, "banking_fraud.csv")
     return {"status": "resolved", "removed_count": int(removed_count)}
+
+# --- SUBMISSION ENDPOINTS ---
+
+@app.post("/api/submit/road")
+def submit_road(data: RoadComplaintSubmit):
+    global road_df
+    new_id = str(uuid.uuid4())
+    new_row = {
+        "complaint_id": new_id,
+        "date_reported": datetime.datetime.now().strftime("%d-%m-%Y"),
+        "city": data.city,
+        "area": data.area,
+        "issue_type": data.issue_type,
+        "description": data.description,
+        "status": "pending",
+        "priority": "Medium",
+        "latitude": "23.0225", # Default simulated
+        "longitude": "72.5714", # Default simulated
+        "area_status": "pending"
+    }
+    road_df = pd.concat([road_df, pd.DataFrame([new_row])], ignore_index=True)
+    save_csv(road_df, "road_complaints.csv")
+    reload_data()
+    return {"status": "submitted", "id": new_id}
+
+@app.post("/api/submit/health")
+def submit_health(data: HealthComplaintSubmit):
+    global health_df
+    new_id = str(uuid.uuid4())
+    new_row = {
+        "complaint_id": new_id,
+        "patient_id": data.patient_id,
+        "date_reported": datetime.datetime.now().strftime("%d-%m-%Y"),
+        "city": data.city,
+        "area": data.area,
+        "facility": data.facility,
+        "category": data.category,
+        "severity": "Medium",
+        "complaint_text": data.complaint_text,
+        "area_status": "pending"
+    }
+    health_df = pd.concat([health_df, pd.DataFrame([new_row])], ignore_index=True)
+    save_csv(health_df, "health_complaints.csv")
+    reload_data()
+    return {"status": "submitted", "id": new_id}
+
+@app.post("/api/submit/banking")
+def submit_banking(data: BankingFraudSubmit):
+    global fraud_df
+    new_id = str(uuid.uuid4())
+    new_row = {
+        "transaction_id": new_id,
+        "account_id": data.account_id,
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "amount": data.amount,
+        "merchant_category": data.merchant_category,
+        "transaction_type": data.transaction_type,
+        "device_type": data.device_type,
+        "location_city": data.location_city,
+        "risk_score": "0.0",
+        "is_fraud": "0",
+        "area_status": "pending",
+        "area": data.area
+    }
+    fraud_df = pd.concat([fraud_df, pd.DataFrame([new_row])], ignore_index=True)
+    save_csv(fraud_df, "banking_fraud.csv")
+    reload_data()
+    return {"status": "submitted", "id": new_id}
+
+@app.get("/api/track/{complaint_id}")
+def track_complaint(complaint_id: str):
+    # Search in road
+    if not road_df.empty:
+        match = road_df[road_df["complaint_id"] == complaint_id]
+        if not match.empty:
+            return {"type": "Road", "status": match.iloc[0].get("area_status", "pending"), "details": match.iloc[0].to_dict()}
+    
+    # Search in health
+    if not health_df.empty:
+        match = health_df[health_df["complaint_id"] == complaint_id]
+        if not match.empty:
+            return {"type": "Health", "status": match.iloc[0].get("area_status", "pending"), "details": match.iloc[0].to_dict()}
+            
+    # Search in banking
+    if not fraud_df.empty:
+        match = fraud_df[fraud_df["transaction_id"] == complaint_id]
+        if not match.empty:
+            return {"type": "Banking", "status": match.iloc[0].get("area_status", "pending"), "details": match.iloc[0].to_dict()}
+            
+    raise HTTPException(404, "Complaint ID not found")
 
 # --- Auto-Open ---
 def open_dashboard():
