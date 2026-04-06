@@ -42,6 +42,7 @@ if (typeof Chart !== 'undefined') {
 
 // Navigation
 function showModule(name) {
+    activeModule = name;
     // Hide all
     Object.values(panels).forEach(p => { if(p) p.classList.add('hidden') });
     Object.values(navBtns).forEach(b => { if(b) b.classList.remove('active') });
@@ -387,6 +388,9 @@ async function loadFraudAreas(city) {
     } catch (e) { console.error(e); }
 }
 
+// Track active module for auto-refresh
+let activeModule = 'home';
+
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Dashboard App Initializing...');
@@ -395,6 +399,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkApi();
     setInterval(checkApi, 5000);
+
     // Load home by default
     showModule('home');
+
+    // Auto-refresh: re-fetch active module data every 10 seconds
+    setInterval(() => {
+        console.log(`[Auto-Refresh] Updating ${activeModule}...`);
+        if (activeModule === 'home') loadHomeData();
+        if (activeModule === 'road') loadRoadData();
+        if (activeModule === 'health') loadHealthData();
+        if (activeModule === 'fraud') loadFraudData();
+    }, 10000);
 });
+

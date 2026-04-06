@@ -57,6 +57,14 @@ road_df = load_csv("road_complaints.csv")
 health_df = load_csv("health_complaints.csv")
 fraud_df = load_csv("banking_fraud.csv")
 
+def reload_data():
+    """Re-read CSVs from disk to pick up new entries."""
+    global road_df, health_df, fraud_df
+    road_df = load_csv("road_complaints.csv")
+    health_df = load_csv("health_complaints.csv")
+    fraud_df = load_csv("banking_fraud.csv")
+    update_stats_cache()
+
 # --- Global Stats Cache ---
 cached_stats = {}
 
@@ -145,6 +153,17 @@ class StatusUpdate(BaseModel):
 @app.get("/api/ping")
 def ping():
     return {"status": "ok"}
+
+@app.get("/api/reload")
+def reload_endpoint():
+    """Force reload all CSVs from disk."""
+    reload_data()
+    return {"status": "reloaded", "counts": {"road": len(road_df), "health": len(health_df), "fraud": len(fraud_df)}}
+
+@app.get("/api/stats")
+def get_stats():
+    reload_data()
+    return cached_stats
 
 @app.get("/")
 def read_root():
