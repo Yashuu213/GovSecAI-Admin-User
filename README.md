@@ -98,7 +98,13 @@ Our current simulation handles **over 100,000 active entries** across Gujarat:
 
 ---
 
+## 📄 License
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
 <div align="center">
   <p><strong>Developed for the Future of Public Safety and Governance</strong></p>
   <p>🚀 <em>Empowering Citizens. Securing Nations.</em> 🛡️</p>
+  <p>&copy; 2026 Yashuu213 (GovSecAI)</p>
 </div>
