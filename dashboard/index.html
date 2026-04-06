@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GovSecAI Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=2.0">
+    <link rel="stylesheet" href="css/modal.css?v=2.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo">G</div>
+                <div>
+                    <div style="font-weight:700; font-size:18px; color:#fff">GovSecAI</div>
+                    <div class="muted" style="font-size:12px">Premium Dashboard</div>
+                </div>
+            </div>
+            <nav class="nav">
+                <button id="nav-home" class="nav-btn active" onclick="showModule('home')">Home Overview</button>
+                <button id="nav-road" class="nav-btn" onclick="showModule('road')">Road Complaints</button>
+                <button id="nav-health" class="nav-btn" onclick="showModule('health')">Health Complaints</button>
+                <button id="nav-fraud" class="nav-btn" onclick="showModule('fraud')">Banking Fraud</button>
+            </nav>
+            <div class="status-box">
+                <div class="muted" style="font-size:11px; margin-bottom:6px">SYSTEM STATUS</div>
+                <div id="api-status" class="pill" style="background:rgba(14, 215, 178, 0.2); color:#0ed7b2">Checking...
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- HOME PANEL -->
+            <div id="panel-home" class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end">
+                    <div>
+                        <h2>Dashboard Overview</h2>
+                        <div class="muted">Real-time analytics and system monitoring</div>
+                    </div>
+                    <div class="pill" style="background:rgba(255,255,255,0.1)">Live Data</div>
+                </div>
+
+                <div class="home-grid">
+                    <!-- Stats Cards -->
+                    <div class="stat-card">
+                        <div class="stat-title">Road Complaints</div>
+                        <div class="stat-value" id="stat-road">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Health Complaints</div>
+                        <div class="stat-value" id="stat-health">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Banking Fraud</div>
+                        <div class="stat-value" id="stat-fraud">-</div>
+                    </div>
+                    <div class="stat-card total">
+                        <div class="stat-title">Total Incidents</div>
+                        <div class="stat-value" id="stat-total">-</div>
+                    </div>
+
+                    <!-- Graph Area -->
+                    <div class="graph-card">
+                        <h3>Complaint Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="homeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Live Alerts -->
+                    <div class="alerts-card">
+                        <h3>Live Alerts</h3>
+                        <div id="home-alerts" class="alerts-list">
+                            <!-- Alerts injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROAD PANEL -->
+            <div id="panel-road" class="panel hidden">
+                <div>
+                    <h2>Road Complaints</h2>
+                    <div class="muted">Infrastructure and maintenance tracking</div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section">
+                        <h3>Complaint Distribution (Top Cities)</h3>
+                        <div class="chart-container-main">
+                            <canvas id="roadChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="list-col">
+                        <h3>Cities List</h3>
+                        <div id="road-cities" class="item-list"></div>
+                    </div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section full-width">
+                        <h3>Top 15 Impacted Areas</h3>
+                        <div class="chart-container-areas">
+                            <canvas id="roadAreaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEALTH PANEL -->
+            <div id="panel-health" class="panel hidden">
+                <div>
+                    <h2>Health Complaints</h2>
+                    <div class="muted">Public health and sanitation monitoring</div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section">
+                        <h3>Sanitation Distribution</h3>
+                        <div class="chart-container-main circular">
+                            <canvas id="healthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="list-col">
+                        <h3>Cities List</h3>
+                        <div id="health-cities" class="item-list"></div>
+                    </div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section full-width">
+                        <h3>Top 15 Impacted Areas</h3>
+                        <div class="chart-container-areas">
+                            <canvas id="healthAreaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRAUD PANEL -->
+            <div id="panel-fraud" class="panel hidden">
+                <div>
+                    <h2>Banking Fraud</h2>
+                    <div class="muted">Financial security and fraud detection</div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section">
+                        <h3>Fraud Security Map</h3>
+                        <div class="chart-container-main circular">
+                            <canvas id="fraudChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="list-col">
+                        <h3>Cities List</h3>
+                        <div id="fraud-cities" class="item-list"></div>
+                    </div>
+                </div>
+                <div class="module-split-row">
+                    <div class="chart-section full-width">
+                        <h3>Top 15 Impacted Areas</h3>
+                        <div class="chart-container-areas">
+                            <canvas id="fraudAreaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+            <div id="modal-details"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=2.0"></script>
+    <script src="js/modal.js?v=2.0"></script>
+</body>
+
+</html>
