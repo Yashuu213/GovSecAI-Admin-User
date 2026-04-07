@@ -30,6 +30,11 @@ function renderForm(type) {
                 <label>Description</label>
                 <textarea name="description" required rows="4" placeholder="Detail your concern..."></textarea>
             </div>
+            <div class="form-group">
+                <label>Evidence (Optional Image)</label>
+                <input type="file" name="evidence" accept="image/*" class="file-input">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">Our AI will verify structural anomalies automatically.</small>
+            </div>
         `;
     } else if (type === 'health') {
         title.innerText = 'Healthcare Services Complaint';
@@ -64,6 +69,11 @@ function renderForm(type) {
             <div class="form-group">
                 <label>Complaint Details</label>
                 <textarea name="complaint_text" required rows="4" placeholder="Describe the incident..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Evidence (Optional Image)</label>
+                <input type="file" name="evidence" accept="image/*" class="file-input">
+                <small style="color:var(--text-muted); font-size:0.8rem; margin-top:4px; display:block;">Our AI will analyze hygiene/structural anomalies automatically.</small>
             </div>
         `;
     } else if (type === 'banking') {
@@ -132,10 +142,10 @@ if (complaintForm) {
         btnText.innerText = "Submitting...";
 
         try {
+            // Send FormData natively to support Python UploadFile
             const response = await fetch(`${API_URL}/submit/${type}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: formData
             });
 
             if (response.ok) {
@@ -155,7 +165,8 @@ if (complaintForm) {
                 // Force Dashboard Update
                 fetch(`${API_URL}/reload`);
             } else {
-                alert("Submission failed. Please try again.");
+                const errData = await response.json().catch(() => ({detail: "Submission failed"}));
+                alert(`⚠️ AI Rejection: ${errData.detail || "Invalid image or data"}`);
                 btn.disabled = false;
                 btnText.innerText = "Submit Complaint";
             }

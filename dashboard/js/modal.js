@@ -1,7 +1,13 @@
-// API Config (Ensure consistency)
 const API_BASE_MODAL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8000/api'
     : `${window.location.origin}/api`;
+
+const getFullUrlModal = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = API_BASE_MODAL.replace('/api', '');
+    return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 let currentContext = null;
 
@@ -62,15 +68,79 @@ function showAreaStatusPopup(module, city, area, count) {
     const modal = document.getElementById('areaStatusModal');
     modal.style.display = 'flex';
 
+    // Show complaint list section
+    const body = document.querySelector('.modal-body');
+    let listContainer = document.getElementById('m-complaint-list');
+    if (!listContainer) {
+        listContainer = document.createElement('div');
+        listContainer.id = 'm-complaint-list';
+        listContainer.style.marginTop = '20px';
+        listContainer.style.maxHeight = '300px';
+        listContainer.style.overflowY = 'auto';
+        listContainer.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+        listContainer.style.paddingTop = '15px';
+        body.insertBefore(listContainer, document.getElementById('m-controls'));
+    }
+    
+    listContainer.innerHTML = '<div class="muted">Loading complaints...</div>';
+
     const controls = document.getElementById('m-controls');
-    // Enable controls for all modules now
     controls.style.display = 'block';
+    
     loadStatus(module, city, area);
+    fetchComplaints(module, city, area);
+}
+
+async function fetchComplaints(module, city, area) {
+    const listContainer = document.getElementById('m-complaint-list');
+    try {
+        const r = await fetch(`${API_BASE_MODAL}/${module}/list/${encodeURIComponent(city)}/${encodeURIComponent(area)}`);
+        const data = await r.json();
+        
+        if (!data || data.length === 0) {
+            listContainer.innerHTML = '<div class="muted">No individual complaints found.</div>';
+            return;
+        }
+
+        listContainer.innerHTML = `<h4>Individual Submissions (${data.length})</h4>`;
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'complaint-item';
+            div.style.background = 'rgba(255,255,255,0.03)';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.marginBottom = '10px';
+            div.style.fontSize = '13px';
+            
+            const imgUrl = getFullUrlModal(item.evidence_url);
+            const imgHtml = item.evidence_url 
+                ? `<div style="margin-top:8px"><img src="${imgUrl}" style="width:100%; border-radius:4px; cursor:pointer" onclick="openLightbox('${imgUrl}')"></div>`
+                : '';
+
+            const aiStatus = module === 'fraud' 
+                ? `<span class="pill" style="background:rgba(239, 68, 68, 0.2); color:#ef4444; font-size:10px">Risk: ${item.risk_score}%</span>`
+                : `<span class="pill" style="background:rgba(14, 215, 178, 0.2); color:#0ed7b2; font-size:10px">AI: ${item.status || 'Verified'}</span>`;
+
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px">
+                    <span style="font-weight:600; color:#3b82f6">${item.complaint_id || item.transaction_id}</span>
+                    ${aiStatus}
+                </div>
+                <div class="muted">${item.description || item.complaint_text || 'No description'}</div>
+                ${imgHtml}
+            `;
+            listContainer.appendChild(div);
+        });
+    } catch (e) {
+        listContainer.innerHTML = '<div class="muted">Error loading complaints</div>';
+    }
 }
 
 function closeModal() {
     document.getElementById('areaStatusModal').style.display = 'none';
     currentContext = null;
+    const list = document.getElementById('m-complaint-list');
+    if (list) list.innerHTML = '';
 }
 
 async function loadStatus(module, city, area) {

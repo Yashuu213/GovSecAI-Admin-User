@@ -1,8 +1,13 @@
-// API Config
-// If we're on localhost, assume the backend is on port 8000
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8000/api'
     : `${window.location.origin}/api`;
+
+const getFullUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = API_BASE.replace('/api', '');
+    return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 // UI Refs
 const panels = {
@@ -170,13 +175,24 @@ async function loadHomeData() {
             data.alerts.forEach(a => {
                 const div = document.createElement('div');
                 div.className = 'alert-item';
+                
+                const imgUrl = getFullUrl(a.evidence_url);
+                const imgHtml = a.evidence_url 
+                    ? `<img src="${imgUrl}" style="width:40px; height:40px; border-radius:4px; object-fit:cover; margin-left:10px; cursor:pointer" onclick="openLightbox('${imgUrl}')">`
+                    : '';
+
                 div.innerHTML = `
-                    <div class="meta">
-                        <span class="tag ${a.source}">${a.source}</span>
-                        <span>${a.date}</span>
+                    <div style="display:flex; justify-content:space-between; width:100%">
+                        <div style="flex:1">
+                            <div class="meta">
+                                <span class="tag ${a.source}">${a.source}</span>
+                                <span>${a.date}</span>
+                            </div>
+                            <div class="desc">${a.description}</div>
+                            <div class="muted" style="font-size:0.75rem; margin-top:8px; opacity: 0.8">${a.city}</div>
+                        </div>
+                        ${imgHtml}
                     </div>
-                    <div class="desc">${a.description}</div>
-                    <div class="muted" style="font-size:0.75rem; margin-top:8px; opacity: 0.8">${a.city}</div>
                 `;
                 list.appendChild(div);
             });

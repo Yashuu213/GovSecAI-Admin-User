@@ -170,11 +170,17 @@
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <span class="close-button" onclick="closeModal()">&times;</span>
             <h2 id="modal-title"></h2>
             <p id="modal-description"></p>
             <div id="modal-details"></div>
         </div>
+    </div>
+
+    <!-- Lightbox Modal for Images -->
+    <div id="lightbox-modal" class="lightbox" onclick="closeLightbox()">
+        <span class="close-lightbox">&times;</span>
+        <img id="lightbox-img" src="" alt="Evidence Preview">
     </div>
 
     <script src="js/app.js?v=2.0"></script>
